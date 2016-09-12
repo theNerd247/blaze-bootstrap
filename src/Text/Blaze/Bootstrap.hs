@@ -9,6 +9,7 @@ import Data.Monoid
 #endif
 import Text.Blaze.Html5
 import Text.Blaze.Html5.Attributes
+import Text.Blaze.Html.Renderer.String
 import qualified Data.Text as T
 import qualified Text.Blaze.Html5 as H
 import qualified Text.Blaze.Html5.Attributes as A
@@ -141,3 +142,15 @@ panelDanger = panel "danger"
 
 badge :: Html -> Html
 badge = H.span ! A.class_ "badge"
+
+addPopOver :: Html -> Html -> Html
+addPopOver bdy popOverContent = H.a 
+  ! customAttribute "tabIndex" "0" 
+  ! role "button" 
+  ! dataAttribute "toggle" "popover" 
+  ! dataAttribute "trigger" "focus" 
+  ! A.title "Dismissible popover" 
+  ! dataAttribute "placement" "auto" 
+  ! dataAttribute "html" "true" 
+  ! dataAttribute "content" (H.toValue $ renderHtml popOverContent)
+  $ bdy
