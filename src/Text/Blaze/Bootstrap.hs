@@ -138,3 +138,6 @@ panelWarning = panel "warning"
 
 panelDanger :: Html -> Html
 panelDanger = panel "danger"
+
+badge :: Html -> Html
+badge = H.span ! A.class_ "badge"
