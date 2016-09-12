@@ -67,8 +67,11 @@ alertBox alertType alertVal =
             BootAlertInfo -> "alert-info"
             BootAlertSuccess -> "alert-success"
 
-mainNavigation :: AttributeValue
-               -> Html -> [(AttributeValue, Html)] -> Html
+-- | Create a navigatiion bar that is to be located at the top of the page. 
+mainNavigation :: AttributeValue -- ^ URL for the title link 
+               -> Html -- ^ The title HTML (typically this is @toHtml "Title"@).
+               -> [(AttributeValue, Html)] -- ^ The list of links for the navbar. Each pair contains the URL and HTML to use for the links.
+               -> Html
 mainNavigation indexPath pageTitle navPoints =
     nav ! class_ "navbar navbar-default navbar-fixed-top" $
      container $
