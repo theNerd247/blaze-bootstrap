@@ -117,3 +117,24 @@ tableResponsive tblHead tblBody =
 -- @glyphicon name ~ <span class="glyphicon glyphicon-name"></span>@ 
 glyphicon :: String -> Html
 glyphicon n = H.span ! A.class_ (H.toValue $ "glyphicon glyphicon-" ++ n) $ mempty
+
+panel :: String -> Html -> Html
+panel t = (H.div ! A.class_ (H.toValue $ "panel panel-"++t)) . (H.div ! A.class_ "panel-body")
+
+panelDefault :: Html -> Html
+panelDefault = panel "default"
+
+panelPrimay :: Html -> Html
+panelPrimay = panel "primary"
+
+panelSuccess :: Html -> Html
+panelSuccess = panel "success"
+
+panelInfo :: Html -> Html
+panelInfo = panel "info"
+
+panelWarning :: Html -> Html
+panelWarning = panel "warning"
+
+panelDanger :: Html -> Html
+panelDanger = panel "danger"
