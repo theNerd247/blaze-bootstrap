@@ -143,13 +143,16 @@ panelDanger = panel "danger"
 badge :: Html -> Html
 badge = H.span ! A.class_ "badge"
 
-addPopOver :: Html -> Html -> Html
-addPopOver bdy popOverContent = H.a 
+addPopOver :: AttributeValue -- ^ Title string of popover
+  -> Html -- ^ The html to make a popover
+  -> Html -- ^ The content HTML of the popover
+  -> Html
+addPopOver tle bdy popOverContent = H.a 
   ! customAttribute "tabIndex" "0" 
   ! role "button" 
   ! dataAttribute "toggle" "popover" 
-  ! dataAttribute "trigger" "focus" 
-  ! A.title "Dismissible popover" 
+  ! dataAttribute "trigger" "click" 
+  ! A.title tle
   ! dataAttribute "placement" "auto" 
   ! dataAttribute "html" "true" 
   ! dataAttribute "content" (H.toValue $ renderHtml popOverContent)
