@@ -107,3 +107,8 @@ tableResponsive tblHead tblBody =
     table ! class_ "table table-striped table-bordered table-hover" $
           do thead tblHead
              tbody tblBody
+
+-- | Creates a glyphicon. 
+-- @glyphicon name ~ <span class="glyphicon glyphicon-name"></span>@ 
+glyphicon :: String -> Html
+glyphicon name = H.span ! A.class_ (H.toValue $ "glyphicon glyphicon-" ++ name) $ mempty
