@@ -32,6 +32,11 @@ row :: Html -> Html
 row x =
     H.div ! class_ "row" $ x
 
+col :: String -- ^ The Bootstrap column size (e.g: xs-7)
+  -> Html -- ^ The body HTML of the column
+  -> Html
+col s = H.div ! class_ (H.toValue $ "col-"++s)
+
 dataToggle :: AttributeValue -> Attribute
 dataToggle = dataAttribute "toggle"
 
@@ -111,4 +116,4 @@ tableResponsive tblHead tblBody =
 -- | Creates a glyphicon. 
 -- @glyphicon name ~ <span class="glyphicon glyphicon-name"></span>@ 
 glyphicon :: String -> Html
-glyphicon name = H.span ! A.class_ (H.toValue $ "glyphicon glyphicon-" ++ name) $ mempty
+glyphicon n = H.span ! A.class_ (H.toValue $ "glyphicon glyphicon-" ++ n) $ mempty
