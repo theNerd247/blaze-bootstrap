@@ -7,52 +7,65 @@ import Control.Monad
 #else
 import Data.Monoid
 #endif
-import Text.Blaze.Html5
-import Text.Blaze.Html5.Attributes
+
+import Text.Blaze.Html ((!),(!?))
 import Text.Blaze.Html.Renderer.String
 import qualified Data.Text as T
 import qualified Text.Blaze.Html5 as H
 import qualified Text.Blaze.Html5.Attributes as A
 
-stylesheet :: AttributeValue -> Html
-stylesheet path =
-    link ! href path ! rel "stylesheet" ! type_ "text/css"
+stylesheet :: H.AttributeValue -> H.Html
+stylesheet path = H.link ! A.href path ! A.rel "stylesheet" ! A.type_ "text/css"
 
-javascript :: AttributeValue -> Html
-javascript path =
-    script ! src path $ emptyEl
+javascript :: H.AttributeValue -> H.Html
+javascript path = H.script ! A.src path $ mempty
 
-emptyEl :: Html
-emptyEl = mempty
+container :: H.Html -> H.Html
+container x = H.div ! A.class_ "container" $ x
 
-container :: Html -> Html
-container x =
-    H.div ! class_ "container" $ x
-
-row :: Html -> Html
-row x =
-    H.div ! class_ "row" $ x
+row :: H.Html -> H.Html
+row x = H.div ! A.class_ "row" $ x
 
 col :: String -- ^ The Bootstrap column size (e.g: xs-7)
-  -> Html -- ^ The body HTML of the column
-  -> Html
-col s = H.div ! class_ (H.toValue $ "col-"++s)
+  -> H.Html -- ^ The body HTML of the column
+  -> H.Html
+col s = H.div ! A.class_ (H.toValue $ "col-"++s)
 
-dataToggle :: AttributeValue -> Attribute
-dataToggle = dataAttribute "toggle"
+data FillPadding = NoPadding | PrePadding | PostPadding
 
-dataTarget :: AttributeValue -> Attribute
-dataTarget = dataAttribute "target"
+-- | Creates repeated columns of equal width to fill the given column width
+fillCols :: 
+  Int  -- ^ The column width to fill
+  -> Int  -- ^ The number of columns to use
+  -> FillPadding
+  -> H.Html  -- ^ The html to fill each column with
+  -> H.Html
+fillCols w n pad = mconcat . makePadCols pad . replicate sz . (col $ "xs-" ++ (show sz))
+  where
+    (sz,rm) = w `quotRem` n
+    makePadCols NoPadding = id
+    makePadCols PrePadding = (paddingCols rm :)
+    makePadCols PostPadding = (++ [paddingCols rm])
 
-dataDismiss :: AttributeValue -> Attribute
-dataDismiss = dataAttribute "dismiss"
+-- | Creates a padding column that contains a single space.
+paddingCols :: Int -> H.Html
+paddingCols n = col ("xs-" ++ (show n)) $ H.toHtml (" " :: String)
 
-ariaHidden :: Bool -> Attribute
+dataToggle :: H.AttributeValue -> H.Attribute
+dataToggle = H.dataAttribute "toggle"
+
+dataTarget :: H.AttributeValue -> H.Attribute
+dataTarget = H.dataAttribute "target"
+
+dataDismiss :: H.AttributeValue -> H.Attribute
+dataDismiss = H.dataAttribute "dismiss"
+
+ariaHidden :: Bool -> H.Attribute
 ariaHidden bool =
-    customAttribute  "aria-hidden" (if bool then "true" else "false")
+    H.customAttribute  "aria-hidden" (if bool then "true" else "false")
 
-role :: AttributeValue -> Attribute
-role = customAttribute "role"
+role :: H.AttributeValue -> H.Attribute
+role = H.customAttribute "role"
 
 data BootAlertType
    = BootAlertDanger
@@ -60,10 +73,10 @@ data BootAlertType
    | BootAlertInfo
    | BootAlertSuccess
 
-alertBox :: BootAlertType -> Html -> Html
+alertBox :: BootAlertType -> H.Html -> H.Html
 alertBox alertType alertVal =
-    H.div ! class_ (toValue $ T.concat ["alert alert-dismissable ", t]) $
-    do button ! type_ "button" ! class_ "close" ! dataDismiss "alert" ! ariaHidden True $ (unsafeByteString "&times;")
+    H.div ! A.class_ (H.toValue $ T.concat ["alert alert-dismissable ", t]) $
+    do H.button ! A.type_ "button" ! A.class_ "close" ! dataDismiss "alert" ! ariaHidden True $ (H.unsafeByteString "&times;")
        alertVal
     where
       t =
@@ -73,91 +86,91 @@ alertBox alertType alertVal =
             BootAlertInfo -> "alert-info"
             BootAlertSuccess -> "alert-success"
 
-mainNavigation :: AttributeValue
-               -> Html -> [(AttributeValue, Html)] -> Html
+mainNavigation :: H.AttributeValue
+               -> H.Html -> [(H.AttributeValue, H.Html)] -> H.Html
 mainNavigation indexPath pageTitle navPoints =
-    nav ! class_ "navbar navbar-default navbar-fixed-top" $
+    H.nav ! A.class_ "navbar navbar-default navbar-fixed-top" $
      container $
-      do H.div ! class_ "navbar-header page-scroll" $
-          do button ! type_ "button" ! class_ "navbar-toggle" ! dataToggle "collapse" ! dataTarget "#main-nav" $
-              do H.span ! class_ "sr-only" $ "Toggle navigation"
-                 H.span ! class_ "icon-bar" $ emptyEl
-                 H.span ! class_ "icon-bar" $ emptyEl
-                 H.span ! class_ "icon-bar" $ emptyEl
-             a ! class_ "navbar-brand" ! href indexPath $ pageTitle
-         H.div ! class_ "collapse navbar-collapse" ! A.id "main-nav" $
-           ul ! class_ "nav navbar-nav navbar-right" $
+      do H.div ! A.class_ "navbar-header page-scroll" $
+          do H.button ! A.type_ "button" ! A.class_ "navbar-toggle" ! dataToggle "collapse" ! dataTarget "#main-nav" $
+              do H.span ! A.class_ "sr-only" $ "Toggle navigation"
+                 H.span ! A.class_ "icon-bar" $ mempty
+                 H.span ! A.class_ "icon-bar" $ mempty
+                 H.span ! A.class_ "icon-bar" $ mempty
+             H.a ! A.class_ "navbar-brand" ! A.href indexPath $ pageTitle
+         H.div ! A.class_ "collapse navbar-collapse" ! A.id "main-nav" $
+           H.ul ! A.class_ "nav navbar-nav navbar-right" $
               forM_ navPoints $ \(url, val) ->
-                li (a ! href url $ val)
+                H.li (H.a ! A.href url $ val)
 
-formGroup :: Html -> Html
+formGroup :: H.Html -> H.Html
 formGroup formBody =
-    H.div ! class_ "form-group" $ formBody
+    H.div ! A.class_ "form-group" $ formBody
 
-formSelect :: (Eq k, ToValue k, ToMarkup v)
-           => T.Text -> AttributeValue -> [(k, v)] -> Maybe k -> Html
+formSelect :: (Eq k, H.ToValue k, H.ToMarkup v)
+           => T.Text -> H.AttributeValue -> [(k, v)] -> Maybe k -> H.Html
 formSelect selLabel selName keyValues selectedV =
     formGroup $
-    do H.label ! for selName $ (toHtml selLabel)
-       H.select ! name selName ! class_ "form-control" $
+    do H.label ! A.for selName $ (H.toHtml selLabel)
+       H.select ! A.name selName ! A.class_ "form-control" $
         forM_ keyValues $ \(k, v) ->
-          H.option ! value (toValue k) !? (Just k == selectedV, selected "selected") $ toMarkup v
+          H.option ! A.value (H.toValue k) !? (Just k == selectedV, A.selected "selected") $ H.toMarkup v
 
-formSubmit :: Html -> Html
+formSubmit :: H.Html -> H.Html
 formSubmit buttonVal =
-    H.button ! type_ "submit" ! class_ "btn btn-lg btn-success btn-block" $ buttonVal
+    H.button ! A.type_ "submit" ! A.class_ "btn btn-lg btn-success btn-block" $ buttonVal
 
-tableResponsive :: Html -> Html -> Html
+tableResponsive :: H.Html -> H.Html -> H.Html
 tableResponsive tblHead tblBody =
-    H.div ! class_ "table-responsive" $
-    table ! class_ "table table-striped table-bordered table-hover" $
-          do thead tblHead
-             tbody tblBody
+    H.div ! A.class_ "table-responsive" $
+    H.table ! A.class_ "table table-striped table-bordered table-hover" $
+          do H.thead tblHead
+             H.tbody tblBody
 
 -- | Creates a glyphicon. 
 -- @glyphicon name ~ <span class="glyphicon glyphicon-name"></span>@ 
-glyphicon :: String -> Html
+glyphicon :: String -> H.Html
 glyphicon n = H.span ! A.class_ (H.toValue $ "glyphicon glyphicon-" ++ n) $ mempty
 
-panel :: String -> Html -> Html
+panel :: String -> H.Html -> H.Html
 panel t = (H.div ! A.class_ (H.toValue $ "panel panel-"++t)) . (H.div ! A.class_ "panel-body")
 
-panelDefault :: Html -> Html
+panelDefault :: H.Html -> H.Html
 panelDefault = panel "default"
 
-panelPrimay :: Html -> Html
+panelPrimay :: H.Html -> H.Html
 panelPrimay = panel "primary"
 
-panelSuccess :: Html -> Html
+panelSuccess :: H.Html -> H.Html
 panelSuccess = panel "success"
 
-panelInfo :: Html -> Html
+panelInfo :: H.Html -> H.Html
 panelInfo = panel "info"
 
-panelWarning :: Html -> Html
+panelWarning :: H.Html -> H.Html
 panelWarning = panel "warning"
 
-panelDanger :: Html -> Html
+panelDanger :: H.Html -> H.Html
 panelDanger = panel "danger"
 
-badge :: Html -> Html
+badge :: H.Html -> H.Html
 badge = H.span ! A.class_ "badge"
 
 addPopOver = addPopOverIndex "0"
 
 addPopOverIndex :: 
-  AttributeValue -- ^ the tabindex to use (this is for nested popovers)
-  -> AttributeValue -- ^ Title string of popover
-  -> Html -- ^ The html to make a popover
-  -> Html -- ^ The content HTML of the popover
-  -> Html
+  H.AttributeValue -- ^ the tabindex to use (this is for nested popovers)
+  -> H.AttributeValue -- ^ Title string of popover
+  -> H.Html -- ^ The html to make a popover
+  -> H.Html -- ^ The content HTML of the popover
+  -> H.Html
 addPopOverIndex ind tle bdy popOverContent = H.a 
-  ! customAttribute "tabIndex" ind
+  ! H.customAttribute "tabIndex" ind
   ! role "button" 
-  ! dataAttribute "toggle" "popover" 
-  ! dataAttribute "trigger" "click" 
+  ! H.dataAttribute "toggle" "popover" 
+  ! H.dataAttribute "trigger" "click" 
   ! A.title tle
-  ! dataAttribute "placement" "auto" 
-  ! dataAttribute "html" "true" 
-  ! dataAttribute "content" (H.toValue $ renderHtml popOverContent)
+  ! H.dataAttribute "placement" "auto" 
+  ! H.dataAttribute "html" "true" 
+  ! H.dataAttribute "content" (H.toValue $ renderHtml popOverContent)
   $ bdy
