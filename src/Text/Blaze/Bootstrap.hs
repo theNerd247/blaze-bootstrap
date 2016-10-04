@@ -103,14 +103,18 @@ mainNavigation indexPath pageTitle navPoints =
               forM_ navPoints $ \(url, val) ->
                 H.li (H.a ! A.href url $ val)
 
-formGroup :: H.Html -> H.Html
-formGroup formBody =
-    H.div ! A.class_ "form-group" $ formBody
+formGroup :: H.Html -> H.Html -> H.Html
+formGroup formBody submitText = H.form $ do 
+  H.div ! A.class_ "form-group" $ formBody
+  formSubmit submitText
+
+
+formInput :: (H.ToValue a, H.ToValue b) => a -> b -> H.Html
+formInput tp name = H.input ! A.class_ "form-control" ! A.type_ (H.toValue tp) ! A.name (H.toValue name)
 
 formSelect :: (Eq k, H.ToValue k, H.ToMarkup v)
            => T.Text -> H.AttributeValue -> [(k, v)] -> Maybe k -> H.Html
 formSelect selLabel selName keyValues selectedV =
-    formGroup $
     do H.label ! A.for selName $ (H.toHtml selLabel)
        H.select ! A.name selName ! A.class_ "form-control" $
         forM_ keyValues $ \(k, v) ->
