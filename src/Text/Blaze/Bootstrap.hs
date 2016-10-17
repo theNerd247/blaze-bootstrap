@@ -175,3 +175,8 @@ addPopOverIndex ind tle bdy popOverContent = H.a
   ! H.dataAttribute "html" "true" 
   ! H.dataAttribute "content" (H.toValue $ renderHtml popOverContent)
   $ bdy
+
+jumbotron :: H.Html -> H.Html -> H.Html
+jumbotron title body = H.div ! A.class_ "jumbotron" $
+  do H.h1 title
+     H.p body
