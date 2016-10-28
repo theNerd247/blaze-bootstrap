@@ -180,3 +180,29 @@ jumbotron :: H.Html -> H.Html -> H.Html
 jumbotron title body = H.div ! A.class_ "jumbotron" $
   do H.h1 title
      H.p body
+
+-- | Create an accordion of panels with pairs of titles and contents
+accordion :: String -> [(H.Html,H.Html)] -> H.Html
+accordion name panels = (H.div ! A.class_ "panel-group" ! ariaMultiSel "true" ! role "tablist" ! A.id (H.toValue aName)) $ snd $ foldr mkAccordion (0,mempty) panels
+  where
+    mkAccordion (title,body) (i,h) = ((,)(i+1)) . (h`mappend`) $  H.div ! A.class_ "panel panel-default" $
+      do H.div ! A.class_ "panel-heading" ! A.id (headName i) ! role "tab" $ H.h2 ! A.class_ "panel-title" $ toggleLink i title
+         H.div ! A.id (cName i) ! A.class_ "panel-collapse collapse" ! role "tabpanel" ! ariaLabel (headName i) $ 
+           H.div ! A.class_ "panel-body" $ body
+    toggleLink i = H.a ! A.href (H.toValue $ cLink i) ! dataToggle "collapse" ! dataParent (H.toValue $ "#" ++ aName) ! ariaControls (cName i)
+    cLink = H.toValue . ("#collapse"++) . show
+    cName = H.toValue . ("collapse"++) . show
+    headName = H.toValue . ("heading"++) . show
+    aName = "accordion" ++ name
+
+ariaLabel :: H.AttributeValue -> H.Attribute
+ariaLabel = H.customAttribute "aria-labelledby"
+
+ariaMultiSel :: H.AttributeValue -> H.Attribute
+ariaMultiSel = H.customAttribute "aria-multiselectable"
+
+dataParent :: H.AttributeValue -> H.Attribute
+dataParent = H.customAttribute "data-parent"
+
+ariaControls :: H.AttributeValue -> H.Attribute
+ariaControls = H.customAttribute "aria-controls"
